@@ -11,20 +11,35 @@ namespace LSharp
         internal void Print(List<object> list)
         {
             Console.Write("(");
-            bool previousItemWasString = false;
+            bool previousItemWasRealToken = false;
             foreach (var item in list)
             {
-                if (item is string)
+                if (item is Token token)
                 {
-                    if (previousItemWasString)
+                    if (previousItemWasRealToken)
                         Console.Write(" ");
-                    Console.Write(item);
-                    previousItemWasString = true;
+                    switch (token.Type)
+                    {
+                        case TokenType.String:
+                            Console.Write("\"");
+                            Console.Write(token.Value);
+                            Console.Write("\"");
+                            break;
+                        case TokenType.Number:
+                            Console.Write(token.Value);
+                            break;
+                        case TokenType.Symbol:
+                            Console.Write(token.Value);
+                            break;
+                        default:
+                            throw new ArgumentException("unknown token");
+                    }
+                    previousItemWasRealToken = true;
                 }
                 else if (item is List<object> sublist)
                 {
                     Print(sublist);
-                    previousItemWasString = false;
+                    previousItemWasRealToken = false;
                 }
             }
             Console.Write(')');

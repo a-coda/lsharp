@@ -8,17 +8,17 @@ namespace LSharp
 {
     internal class Parser
     {
-        internal IEnumerable<List<object>> Parse(IEnumerable<string> tokenisedInput)
+        internal IEnumerable<List<object>> Parse(IEnumerable<Token> tokenisedInput)
         {
             Stack<List<object>> stack = new Stack<List<object>>();
             foreach (var token in tokenisedInput)
             {
-                switch (token)
+                switch (token.Type)
                 {
-                    case "(":
+                    case TokenType.OpenParen:
                         stack.Push(new List<object>());
                         break;
-                    case ")":
+                    case TokenType.CloseParen:
                         var sublist = stack.Pop();
                         if (stack.Count > 0)
                         {
