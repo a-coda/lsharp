@@ -25,7 +25,7 @@ namespace LSharp
     {
         public static void Main(string[] args)
         {
-            foreach (var list in new Parser().Parse(new Tokeniser().Tokenise("(defun foo (x) (+ x 1)) (foo 10.05) (concat \"a\" \"b\")")))
+            foreach (var list in new Parser().Parse(new Tokeniser().Tokenise(args[0])))
             {
                 new Printer().Print(list);
             }
