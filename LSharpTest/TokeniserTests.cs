@@ -13,8 +13,10 @@ namespace LSharpTest
         public void TestTokeniser()
         {
             var tokeniser = new Tokeniser();
-            var actual = tokeniser.Tokenise("(defun foo (x) (+ x 1)) (foo 10.05) (concat \"a\" \"b\")").ToArray();
-            Token[] expected = new Token[] {
+            var input = "(defun foo (x) (+ x 1)) (foo 10.05) (concat \"a\" \"b\")";
+            var actual = tokeniser.Tokenise(input).ToArray();
+            var expected = new Token[] 
+            {
                 new Token { Type = TokenType.OpenParen },
                 new Token { Type = TokenType.Symbol, Value = "defun" },
                 new Token { Type = TokenType.Symbol, Value = "foo" },
@@ -36,8 +38,8 @@ namespace LSharpTest
                 new Token { Type = TokenType.String, Value = "a" },
                 new Token { Type = TokenType.String, Value = "b" },
                 new Token { Type = TokenType.CloseParen }
-                };
-             Assert.That(actual, Is.EqualTo(expected));
+             };
+             Assert.That(actual, Is.EquivalentTo(expected));
         }
     }
 }
