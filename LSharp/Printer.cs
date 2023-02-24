@@ -10,26 +10,31 @@ namespace LSharp
     {
         internal void Print(List<object> list)
         {
-            Console.Write("(");
+            Print(Console.Out, list);
+        }
+
+        internal void Print(TextWriter stream, List<object> list)
+        {
+            stream.Write("(");
             bool previousItemWasRealToken = false;
             foreach (var item in list)
             {
                 if (item is Token token)
                 {
                     if (previousItemWasRealToken)
-                        Console.Write(" ");
+                        stream.Write(" ");
                     switch (token.Type)
                     {
                         case TokenType.String:
-                            Console.Write("\"");
-                            Console.Write(token.Value);
-                            Console.Write("\"");
+                            stream.Write("\"");
+                            stream.Write(token.Value);
+                            stream.Write("\"");
                             break;
                         case TokenType.Number:
-                            Console.Write(token.Value);
+                            stream.Write(token.Value);
                             break;
                         case TokenType.Symbol:
-                            Console.Write(token.Value);
+                            stream.Write(token.Value);
                             break;
                         default:
                             throw new ArgumentException("unknown token");
@@ -38,11 +43,11 @@ namespace LSharp
                 }
                 else if (item is List<object> sublist)
                 {
-                    Print(sublist);
+                    Print(stream, sublist);
                     previousItemWasRealToken = false;
                 }
             }
-            Console.Write(')');
+            stream.Write(')');
         }
     }
 }
