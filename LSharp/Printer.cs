@@ -8,21 +8,32 @@ namespace LSharp
 {
     internal class Printer
     {
-        internal void Print(List<object> list)
+        internal void Print(object obj)
         {
-            Print(Console.Out, list);
+            Print(Console.Out, obj);
         }
 
-        internal void Print(TextWriter stream, List<object> list)
+        internal void Print(TextWriter stream, object obj)
         {
-            stream.Write("(");
-            bool previousItemWasRealToken = false;
-            foreach (var item in list)
+            if (obj is List<object> list)
             {
-                if (item is Token token)
+                stream.Write("(");
+                bool addSpace = false;
+                foreach (var item in list)
                 {
-                    if (previousItemWasRealToken)
+                    if (addSpace)
+                    {
                         stream.Write(" ");
+                    }
+                    Print(stream, item);
+                    addSpace = true;
+                }
+                stream.Write(')');
+            }
+            else
+            {
+                if (obj is Token token)
+                {
                     switch (token.Type)
                     {
                         case TokenType.String:
@@ -37,17 +48,14 @@ namespace LSharp
                             stream.Write(token.Value);
                             break;
                         default:
-                            throw new ArgumentException("unknown token");
-                    }
-                    previousItemWasRealToken = true;
+                            throw new ArgumentException($"unknown token: {obj}");
+                    }                
                 }
-                else if (item is List<object> sublist)
+                else
                 {
-                    Print(stream, sublist);
-                    previousItemWasRealToken = false;
+                    throw new ArgumentException("unknown value: {obj}");
                 }
             }
-            stream.Write(')');
         }
     }
 }

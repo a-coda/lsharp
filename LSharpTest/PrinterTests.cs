@@ -55,7 +55,7 @@ namespace LSharpTest
                 }
                 actual = writer.ToString();
             }
-            var expected = "(defun foo(x)(+ x 1))(foo 10.05)(concat \"a\" \"b\")";
+            var expected = "(defun foo (x) (+ x 1))(foo 10.05)(concat \"a\" \"b\")";
             Assert.That(actual, Is.EqualTo(expected));
         }
     }

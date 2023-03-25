@@ -25,9 +25,17 @@ namespace LSharp
     {
         public static void Main(string[] args)
         {
-            foreach (var list in new Parser().Parse(new Tokeniser().Tokenise(args[0])))
+            var t = new Tokeniser();
+            var p = new Parser();
+            var w = new Printer();
+            var c = new Compiler();
+            var tokens = t.Tokenise(args[0]);
+            foreach (var sexpr in p.Parse(tokens))
             {
-                new Printer().Print(list);
+                w.Print(sexpr);
+                var expression = c.Compile(sexpr);
+                Console.Write("\n=> ");
+                Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
             }
         }
     } 

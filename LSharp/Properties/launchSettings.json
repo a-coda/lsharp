@@ -2,7 +2,7 @@
   "profiles": {
     "LSharp": {
       "commandName": "Project",
-      "commandLineArgs": "\"(defun foo (x) (+ x 1))\""
+      "commandLineArgs": "\"(System.String.Concat \\\"1\\\" \\\"1\\\")\""
     }
   }
 }
