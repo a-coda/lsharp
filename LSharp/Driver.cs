@@ -1,9 +1,4 @@
 ﻿using System.Linq.Expressions;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Linq.Expressions;
 
 // defun, let, lambda, apply, eval, quote, car, cdr
 // C# version of hylang
@@ -23,19 +18,29 @@ namespace LSharp
 {
     class Driver
     {
+        Tokeniser tokeniser = new Tokeniser();
+        Parser parser = new Parser();
+        Printer writer = new Printer();
+        Compiler compiler = new Compiler();
+
         public static void Main(string[] args)
         {
-            var t = new Tokeniser();
-            var p = new Parser();
-            var w = new Printer();
-            var c = new Compiler();
-            var tokens = t.Tokenise(args[0]);
-            foreach (var sexpr in p.Parse(tokens))
+            var filename = args[0];
+            new Driver().Evaluate(filename);
+        }
+
+        public void Evaluate(string filename)
+        {
+            using (var stream = new StreamReader(filename))
             {
-                w.Print(sexpr);
-                var expression = c.Compile(sexpr);
-                Console.Write("\n=> ");
-                Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
+                var tokens = tokeniser.Tokenise(stream);
+                foreach (var sexpr in parser.Parse(tokens))
+                {
+                    writer.Print(sexpr);
+                    var expression = compiler.Compile(sexpr);
+                    Console.Write("\n=> ");
+                    Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
+                }
             }
         }
     } 

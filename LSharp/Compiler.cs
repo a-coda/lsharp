@@ -54,7 +54,7 @@ namespace LSharp
             var type = Type.GetType(typename);
             if (type == null)
             {
-                throw new ArgumentException($"unknown type: {type}");
+                throw new ArgumentException($"unknown type: {typename}");
             }
             var leafname = parts[^1];
             var typesOfArguments = arguments.Skip(1).Select(_ => typeof(object)).ToArray();

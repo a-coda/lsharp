@@ -21,6 +21,11 @@ namespace LSharp
             return obj is Token t && Type.Equals(t.Type) && object.Equals(Value, t.Value);
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Type.GetHashCode(), Value?.GetHashCode());
+        }
+
         public override string ToString()
         {
             var value = Value?.ToString() ?? "";
@@ -32,10 +37,12 @@ namespace LSharp
     {
         private StringBuilder tokenChars = new StringBuilder();
 
-        internal IEnumerable<Token> Tokenise(string input)
+        internal IEnumerable<Token> Tokenise(TextReader input)
         {
-            foreach (char c in input)
+            int read;
+            while ((read = input.Read()) > -1)
             {
+                char c = (char)read;
                 switch (c)
                 {
                     case '(':
@@ -49,6 +56,9 @@ namespace LSharp
                         yield return new Token { Type = TokenType.CloseParen };
                         break;
                     case ' ':
+                    case '\t':
+                    case '\n':
+                    case '\r':
                         if (IsStarted())
                             yield return NextToken();
                         break;

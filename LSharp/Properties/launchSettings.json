@@ -2,7 +2,7 @@
   "profiles": {
     "LSharp": {
       "commandName": "Project",
-      "commandLineArgs": "\"(System.String.Concat \\\"1\\\" \\\"1\\\")\""
+      "commandLineArgs": "C:\\Users\\jason\\source\\repos\\LSharp\\LSharpTest\\test.ls"
     }
   }
 }

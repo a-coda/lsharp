@@ -14,7 +14,7 @@ namespace LSharpTest
         {
             var tokeniser = new Tokeniser();
             var input = "(defun foo (x) (+ x 1)) (foo 10.05) (concat \"a\" \"b\")";
-            var actual = tokeniser.Tokenise(input).ToArray();
+            var actual = tokeniser.Tokenise(new StringReader(input)).ToArray();
             var expected = new Token[] 
             {
                 new Token { Type = TokenType.OpenParen },
