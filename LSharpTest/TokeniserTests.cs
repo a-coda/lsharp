@@ -13,7 +13,7 @@ namespace LSharpTest
         public void TestTokeniser()
         {
             var tokeniser = new Tokeniser();
-            var input = "(defun foo (x) (+ x 1)) (foo 10.05) (concat \"a\" \"b\")";
+            var input = "(defun foo (x) (+ x 1)) (foo 10.05) (concat \"a \" \" b\")";
             var actual = tokeniser.Tokenise(new StringReader(input)).ToArray();
             var expected = new Token[] 
             {
@@ -35,8 +35,8 @@ namespace LSharpTest
                 new Token { Type = TokenType.CloseParen },
                 new Token { Type = TokenType.OpenParen },
                 new Token { Type = TokenType.Symbol, Value = "concat" },
-                new Token { Type = TokenType.String, Value = "a" },
-                new Token { Type = TokenType.String, Value = "b" },
+                new Token { Type = TokenType.String, Value = "a " },
+                new Token { Type = TokenType.String, Value = " b" },
                 new Token { Type = TokenType.CloseParen }
              };
              Assert.That(actual, Is.EquivalentTo(expected));

@@ -60,7 +60,12 @@ namespace LSharp
                     case '\n':
                     case '\r':
                         if (IsStarted())
-                            yield return NextToken();
+                        {
+                            if (InString())
+                                tokenChars.Append(c);
+                            else
+                                yield return NextToken();
+                        }
                         break;
                     default:
                         tokenChars.Append(c);
@@ -103,6 +108,11 @@ namespace LSharp
         internal bool IsStarted()
         {
             return tokenChars.Length > 0;
+        }
+
+        internal bool InString()
+        {
+            return tokenChars[0] == '"' && (tokenChars.Length == 1 || !(tokenChars[^1] == '"'));
         }
     }
 }
