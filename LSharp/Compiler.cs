@@ -48,22 +48,47 @@ namespace LSharp
 
         private MethodInfo CompileMethod(List<Expression> arguments)
         {
-            var fullname = ((ParameterExpression)arguments[0]).Name;
-            var parts = fullname.Split(".");
-            var typename = String.Join('.', parts.SkipLast(1));
-            var type = Type.GetType(typename);
+            var (typeName, functionName) = ParseFunctionName(arguments);
+            var type = Type.GetType(typeName);
             if (type == null)
             {
-                throw new ArgumentException($"unknown type: {typename}");
+                throw new ArgumentException($"unknown type: {typeName}");
             }
-            var leafname = parts[^1];
-            var typesOfArguments = arguments.Skip(1).Select(_ => typeof(object)).ToArray();
-            var method = type.GetMethod(leafname, typesOfArguments);
+            var method = FindMethod(type, functionName, arguments);
             if (method == null)
             {
-                throw new ArgumentException($"unknown method: {leafname} with args: {string.Join(',', (object[])typesOfArguments)}");
+                throw new ArgumentException($"unknown method: {functionName}");
             }
             return method;
+        }
+
+        private MethodInfo? FindMethod(Type type, string functionName, List<Expression> arguments)
+        {
+            MethodInfo? method = null;
+            foreach (var mapper in MapTypesOfArguments())
+            {
+                var typesOfArguments = arguments.Skip(1).Select(mapper).ToArray();
+                Console.WriteLine($"\ntrying {string.Join(',', (object[])typesOfArguments)} ..");
+                method = type.GetMethod(functionName, typesOfArguments);
+                if (method != null)
+                    break;
+            }
+            return method;
+        }
+
+        private IEnumerable<Func<Expression,Type>> MapTypesOfArguments()
+        {
+            yield return arg => arg.Type;
+            yield return _ => typeof(object); // default kind of method
+        }
+
+        private (string, string) ParseFunctionName(List<Expression> arguments)
+        {
+            var fullName = ((ParameterExpression)arguments[0]).Name;
+            var parts = fullName.Split(".");
+            var typeName = String.Join('.', parts.SkipLast(1));
+            var functionName = parts[^1];
+            return (typeName, functionName);
         }
     }
 }
