@@ -63,6 +63,7 @@ namespace LSharp
             var method = FindMethod(type, functionName, arguments);
             if (method == null)
             {
+                DumpCandidateMethods(type, functionName);
                 throw new ArgumentException($"unknown method: {functionName}");
             }
             return method;
@@ -80,6 +81,17 @@ namespace LSharp
                     break;
             }
             return method;
+        }
+
+        private void DumpCandidateMethods(Type type, string functionName)
+        {
+            foreach (var actualMethod in type.GetMethods())
+            {
+                if (actualMethod.Name == functionName)
+                {
+                    Console.WriteLine(actualMethod.Name + "(" + string.Join(',', actualMethod.GetParameters().Select(p => p.ParameterType.ToString()).ToArray()) + ")");
+                }
+            }
         }
 
         private IEnumerable<Func<Expression,Type>> MapTypesOfArguments()
