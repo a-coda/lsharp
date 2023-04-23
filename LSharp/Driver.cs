@@ -1,8 +1,7 @@
 ﻿using System.Linq.Expressions;
 
-// defun, let, lambda, apply, eval, quote, car, cdr
+// defun, let, lambda, apply, eval, quote, car, cdr, if
 // C# version of hylang
-// Parser, tokenizer, compiler
 // number, string, symbol
 // Examples:
 // 
@@ -37,7 +36,7 @@ namespace LSharp
                 foreach (var sexpr in parser.Parse(tokens))
                 {
                     writer.Print(sexpr);
-                    var expression = compiler.Compile(sexpr);
+                    var expression = compiler.CompileTopLevel(sexpr);
                     Console.Write("\n=> ");
                     Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
                 }

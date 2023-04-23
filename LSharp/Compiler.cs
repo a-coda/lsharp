@@ -11,6 +11,12 @@ namespace LSharp
         {
         }
 
+        internal Expression CompileTopLevel(object expr)
+        {
+            return Expression.Lambda(Compile(expr));
+        }
+
+
         internal Expression Compile(object sexpr)
         {
             if (sexpr is List<object> list)
@@ -21,7 +27,7 @@ namespace LSharp
                     arguments.Add(Compile(item));
                 }
                 var method = CompileMethod(arguments);
-                return Expression.Lambda(Expression.Call(method, arguments.Skip(1)));
+                return Expression.Call(method, arguments.Skip(1));
             }
             else
             {
