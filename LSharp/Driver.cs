@@ -1,18 +1,5 @@
 ﻿using System.Linq.Expressions;
 
-// defun, let, lambda, apply, eval, quote, car, cdr, if
-// C# version of hylang
-// number, string, symbol
-// Examples:
-// 
-// [1]
-// (defun foo (x) (+ x 1))
-// => dynamic foo (dynamic x) { return x + 1; }
-// 
-// [2]
-// (Console.WriteLine "Hello, World!")
-// 
-
 namespace LSharp
 {
     class Driver
