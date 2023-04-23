@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -21,13 +23,11 @@ namespace LSharp
         {
             if (sexpr is List<object> list)
             {
-                List<Expression> arguments = new List<Expression>();
-                foreach (var item in list)
+                return list[0] switch
                 {
-                    arguments.Add(Compile(item));
-                }
-                var method = CompileMethod(arguments);
-                return Expression.Call(method, arguments.Skip(1));
+                    Token{ Type: TokenType.Symbol, Value: "if" } => CompileIf(list),
+                    _ => CompileFunctionCall(list)
+                };
             }
             else
             {
@@ -38,6 +38,8 @@ namespace LSharp
                         case TokenType.String:
                             return Expression.Constant(token.Value);
                         case TokenType.Number:
+                            return Expression.Constant(token.Value);
+                        case TokenType.Boolean:
                             return Expression.Constant(token.Value);
                         case TokenType.Symbol:
                             return Expression.Variable(typeof(object), (string)token.Value);
@@ -52,13 +54,33 @@ namespace LSharp
             }
         }
 
+        private Expression CompileIf(List<object> list)
+        {
+            return list.Count switch
+            {
+                4 => Expression.Condition(Compile(list[1]), Compile(list[2]), Compile(list[3])),
+                _ => throw new InvalidOperationException($"if-statement must have 3 arguments, got {list.Count}")
+            };
+        }
+
+        private Expression CompileFunctionCall(List<object> list)
+        {
+            List<Expression> arguments = new List<Expression>();
+            foreach (var item in list)
+            {
+                arguments.Add(Compile(item));
+            }
+            var method = CompileMethod(arguments);
+            return Expression.Call(method, arguments.Skip(1));
+        }
+
         private MethodInfo CompileMethod(List<Expression> arguments)
         {
             var (typeName, functionName) = ParseFunctionName(arguments);
             var type = Type.GetType(typeName);
             if (type == null)
             {
-                throw new ArgumentException($"unknown type: {typeName}");
+                throw new ArgumentException($"unknown type: \"{typeName}\"");
             }
             var (method, signaturesTried) = FindMethod(type, functionName, arguments);
             if (method == null)
@@ -112,6 +134,8 @@ namespace LSharp
         private (string, string) ParseFunctionName(List<Expression> arguments)
         {
             var fullName = ((ParameterExpression)arguments[0]).Name;
+            if (fullName == null)
+                throw new ArgumentNullException(fullName);
             var parts = fullName.Split(".");
             var typeName = String.Join('.', parts.SkipLast(1));
             var functionName = parts[^1];

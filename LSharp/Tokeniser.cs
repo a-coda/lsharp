@@ -9,12 +9,12 @@ namespace LSharp
 {
     enum TokenType
     {
-        None, String, Number, OpenParen, CloseParen, Symbol
+        None, String, Number, Boolean, OpenParen, CloseParen, Symbol
     }
     class Token
     { 
         internal TokenType Type;
-        internal object? Value;
+        internal object Value = "";
 
         public override bool Equals(object? obj)
         {
@@ -89,6 +89,10 @@ namespace LSharp
                 else if (Regex.IsMatch(value, @"^[0-9.]+$"))
                 {
                     token = new Token { Type = TokenType.Number, Value = Double.Parse(value) };
+                }
+                else if (value.StartsWith("#"))
+                {
+                    token = new Token { Type = TokenType.Boolean, Value = value[1] switch { 't' => true, 'f' => false, _ => throw new ArgumentException($"unknown boolean value: {value}") } };
                 }
                 else
                 {

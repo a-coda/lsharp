@@ -44,6 +44,10 @@ namespace LSharp
                         case TokenType.Number:
                             stream.Write(token.Value);
                             break;
+                        case TokenType.Boolean:
+                            stream.Write("#");
+                            stream.Write((bool)token.Value ? "t" : "f");
+                            break;
                         case TokenType.Symbol:
                             stream.Write(token.Value);
                             break;
