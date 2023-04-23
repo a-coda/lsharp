@@ -21,37 +21,19 @@ namespace LSharp
 
         internal Expression Compile(object sexpr)
         {
-            if (sexpr is List<object> list)
+            return sexpr switch
             {
-                return list[0] switch
+                List<object> list => list[0] switch
                 {
-                    Token{ Type: TokenType.Symbol, Value: "if" } => CompileIf(list),
+                    Token { Type: TokenType.Symbol, Value: "if" } => CompileIf(list),
                     _ => CompileFunctionCall(list)
-                };
-            }
-            else
-            {
-                if (sexpr is Token token)
-                {
-                    switch (token.Type)
-                    {
-                        case TokenType.String:
-                            return Expression.Constant(token.Value);
-                        case TokenType.Number:
-                            return Expression.Constant(token.Value);
-                        case TokenType.Boolean:
-                            return Expression.Constant(token.Value);
-                        case TokenType.Symbol:
-                            return Expression.Variable(typeof(object), (string)token.Value);
-                        default:
-                            throw new ArgumentException("unknown token");
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException($"unknown sexpr: {sexpr}");
-                }
-            }
+                },
+                Token { Type: TokenType.String } token => Expression.Constant(token.Value),
+                Token { Type: TokenType.Number } token => Expression.Constant(token.Value),
+                Token { Type: TokenType.Boolean } token => Expression.Constant(token.Value),
+                Token { Type: TokenType.Symbol } token => Expression.Variable(typeof(object), (string)token.Value),
+                _ => throw new ArgumentException($"unknown expression: {sexpr}")
+            };
         }
 
         private Expression CompileIf(List<object> list)
