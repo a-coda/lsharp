@@ -1,9 +1,14 @@
 # lsharp
 L# - basic Lisp for .NET
 
+An exploration of what is possible in C# Expression Trees
+
 Sort of inspired by hylang (Lisp on Python)
 
 # todo
+
+## expressions
+
 * .NET function calls
 * in-language function calls
 * defun
@@ -16,6 +21,14 @@ Sort of inspired by hylang (Lisp on Python)
 * car
 * cdr
 * if
+
+## types
+
+* doubles
+* strings
+* symbols
+* booleans (t, nil)
+* lists
 
 # Examples:
 
