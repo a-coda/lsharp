@@ -60,29 +60,38 @@ namespace LSharp
             {
                 throw new ArgumentException($"unknown type: {typeName}");
             }
-            var method = FindMethod(type, functionName, arguments);
+            var (method, signaturesTried) = FindMethod(type, functionName, arguments);
             if (method == null)
             {
+                DumpSignaturesTried(signaturesTried);
                 DumpCandidateMethods(type, functionName);
                 throw new ArgumentException($"unknown method: {functionName}");
             }
             return method;
         }
 
-        private MethodInfo? FindMethod(Type type, string functionName, List<Expression> arguments)
+        private (MethodInfo?, IEnumerable<Type[]>) FindMethod(Type type, string functionName, List<Expression> arguments)
         {
             MethodInfo? method = null;
+            List<Type[]> signaturesTried = new ();
             foreach (var mapper in MapTypesOfArguments())
             {
                 var typesOfArguments = arguments.Skip(1).Select(mapper).ToArray();
-                Console.WriteLine($"\ntrying {string.Join(',', (object[])typesOfArguments)} ..");
+                signaturesTried.Add(typesOfArguments);
                 method = type.GetMethod(functionName, typesOfArguments);
                 if (method != null)
                     break;
             }
-            return method;
+            return (method, signaturesTried);
         }
 
+        private void DumpSignaturesTried(IEnumerable<Type[]> signaturesTried)
+        {
+            foreach (var typesOfArguments in signaturesTried)
+            {
+                Console.WriteLine($"\nTried: {string.Join(',', (object[])typesOfArguments)} ..");
+            }
+        }
         private void DumpCandidateMethods(Type type, string functionName)
         {
             foreach (var actualMethod in type.GetMethods())
