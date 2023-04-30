@@ -9,6 +9,8 @@ namespace LSharp
 {
     internal class Compiler
     {
+        private static readonly Dictionary<string, Func<object[], object>> definitions = new() { };
+
         public Compiler()
         {
         }
@@ -25,8 +27,9 @@ namespace LSharp
             {
                 List<object> list => list[0] switch
                 {
-                    Token { Type: TokenType.Symbol, Value: "if" } => CompileIf(list),
-                    _ => CompileFunctionCall(list)
+                    Token { Type: TokenType.Symbol, Value: "if" } => CompileIf(CompileForm(list)),
+                    Token { Type: TokenType.Symbol, Value: "defun" } => CompileDefun(list),
+                    _ => CompileFunctionCall(CompileForm(list))
                 },
                 Token { Type: TokenType.String } token => Expression.Constant(token.Value),
                 Token { Type: TokenType.Number } token => Expression.Constant(token.Value),
@@ -36,24 +39,68 @@ namespace LSharp
             };
         }
 
-        private Expression CompileIf(List<object> list)
+        private Expression CompileIf(List<Expression> list)
         {
             return list.Count switch
             {
-                4 => Expression.Condition(Compile(list[1]), Compile(list[2]), Compile(list[3])),
+                4 => Expression.Condition(list[1], list[2], list[3]),
                 _ => throw new InvalidOperationException($"if-statement must have 3 arguments, got {list.Count}")
             };
         }
 
-        private Expression CompileFunctionCall(List<object> list)
+        private Expression CompileDefun(List<object> list)
+        {
+            return CompileFunctionCall(
+                new List<Expression>() {
+                    Expression.Variable(typeof(object), "LSharp.Compiler.DefineFunction"),
+                    Expression.Constant(((Token)list[1]).Value), // name
+                    Expression.Lambda(Compile(list[3]), CompileFunctionParameters(list[2])) }); // body
+        }
+
+        private IEnumerable<ParameterExpression> CompileFunctionParameters(object sexpr)
+        {
+            if (sexpr is List<object> list)
+            {
+                var parameters = new List<ParameterExpression>();
+                foreach (var x in list)
+                {
+                    if (x is Token { Type: TokenType.Symbol } token)
+                    {
+                        parameters.Add(Expression.Variable(typeof(object), (string)token.Value));
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"unexpected parameter: {x}");
+                    }   
+                }
+                return parameters;
+            }
+            else
+            {
+                throw new ArgumentException($"unexpected parameter expression: {sexpr}");
+            }
+        }
+
+        // Used dynamically
+        private void DefineFunction(object name, object function)
+        {
+            Console.WriteLine($"Defining {name} as {function}");
+        }
+
+        private List<Expression> CompileForm(List<object> list)
         {
             List<Expression> arguments = new List<Expression>();
             foreach (var item in list)
             {
                 arguments.Add(Compile(item));
             }
-            var method = CompileMethod(arguments);
-            return Expression.Call(method, arguments.Skip(1));
+            return arguments;
+        }
+
+        private Expression CompileFunctionCall(List<Expression> list)
+        {
+            var method = CompileMethod(list);
+            return Expression.Call(method, list.Skip(1));
         }
 
         private MethodInfo CompileMethod(List<Expression> arguments)

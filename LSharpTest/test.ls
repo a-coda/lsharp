@@ -2,3 +2,4 @@
 (System.String.Concat "hello " "world")
 (System.String.Concat "abc" (System.String.Concat "def" "ghi"))
 (if #t (System.String.Concat "true " "path") "false path")
+(defun foo (x) (System.String.Concat x "1"))

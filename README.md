@@ -9,7 +9,7 @@ Sort of inspired by hylang (Lisp on Python)
 
 ## expressions
 
-* .NET function calls
+* .NET function calls - partially done
 * in-language function calls
 * defun
 * let
@@ -20,14 +20,14 @@ Sort of inspired by hylang (Lisp on Python)
 * cons
 * car
 * cdr
-* if
+* if-then-else - done
 
 ## types
 
-* doubles
-* strings
-* symbols
-* booleans (t, nil)
+* doubles - done
+* strings - done
+* symbols 
+* booleans (#t, #f) - done
 * lists
 
 # Examples:
