@@ -34,12 +34,12 @@ namespace LSharp
                 Token { Type: TokenType.String } token => Expression.Constant(token.Value),
                 Token { Type: TokenType.Number } token => Expression.Constant(token.Value),
                 Token { Type: TokenType.Boolean } token => Expression.Constant(token.Value),
-                Token { Type: TokenType.Symbol } token => LookupSymbol(env, (string)token.Value),
+                Token { Type: TokenType.Symbol } token => CompileSymbol(env, (string)token.Value),
                 _ => throw new ArgumentException($"unknown expression: {sexpr}")
             };
         }
 
-        private ParameterExpression LookupSymbol(Dictionary<string, ParameterExpression> env, string name)
+        private ParameterExpression CompileSymbol(Dictionary<string, ParameterExpression> env, string name)
         {
             if (env.TryGetValue(name, out ParameterExpression parameter))
             {
