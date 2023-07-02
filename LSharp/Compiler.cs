@@ -17,26 +17,35 @@ namespace LSharp
 
         internal Expression CompileTopLevel(object expr)
         {
-            return Expression.Lambda(Compile(expr));
+            return Expression.Lambda(Compile(expr, new Dictionary<string, ParameterExpression>()));
         }
 
 
-        internal Expression Compile(object sexpr)
+        internal Expression Compile(object sexpr, Dictionary<string, ParameterExpression> env)
         {
             return sexpr switch
             {
                 List<object> list => list[0] switch
                 {
-                    Token { Type: TokenType.Symbol, Value: "if" } => CompileIf(CompileForm(list)),
+                    Token { Type: TokenType.Symbol, Value: "if" } => CompileIf(CompileForm(list ,env)),
                     Token { Type: TokenType.Symbol, Value: "defun" } => CompileDefun(list),
-                    _ => CompileFunctionCall(CompileForm(list))
+                    _ => CompileFunctionCall(CompileForm(list, env))
                 },
                 Token { Type: TokenType.String } token => Expression.Constant(token.Value),
                 Token { Type: TokenType.Number } token => Expression.Constant(token.Value),
                 Token { Type: TokenType.Boolean } token => Expression.Constant(token.Value),
-                Token { Type: TokenType.Symbol } token => Expression.Variable(typeof(object), (string)token.Value),
+                Token { Type: TokenType.Symbol } token => LookupSymbol(env, (string)token.Value),
                 _ => throw new ArgumentException($"unknown expression: {sexpr}")
             };
+        }
+
+        private ParameterExpression LookupSymbol(Dictionary<string, ParameterExpression> env, string name)
+        {
+            if (env.TryGetValue(name, out ParameterExpression parameter))
+            {
+                return parameter;
+            }
+            return Expression.Variable(typeof(object), name);
         }
 
         private Expression CompileIf(List<Expression> list)
@@ -50,30 +59,34 @@ namespace LSharp
 
         private Expression CompileDefun(List<object> list)
         {
+            (Dictionary<string, ParameterExpression> env, IEnumerable<ParameterExpression> parameters) = CompileFunctionParameters(list[2]);
             return CompileFunctionCall(
                 new List<Expression>() {
                     Expression.Variable(typeof(object), "LSharp.Compiler.DefineFunction"),
                     Expression.Constant(((Token)list[1]).Value), // name
-                    Expression.Lambda(Compile(list[3]), CompileFunctionParameters(list[2])) }); // body
+                    Expression.Lambda(Compile(list[3], env), parameters) }); // body
         }
 
-        private IEnumerable<ParameterExpression> CompileFunctionParameters(object sexpr)
+        private (Dictionary<string, ParameterExpression>, IEnumerable<ParameterExpression>) CompileFunctionParameters(object sexpr)
         {
             if (sexpr is List<object> list)
             {
                 var parameters = new List<ParameterExpression>();
+                var env = new Dictionary<string, ParameterExpression>();
                 foreach (var x in list)
                 {
                     if (x is Token { Type: TokenType.Symbol } token)
                     {
-                        parameters.Add(Expression.Variable(typeof(object), (string)token.Value));
+                        ParameterExpression parameter = Expression.Parameter(typeof(object), (string)token.Value);
+                        parameters.Add(parameter);
+                        env[(string)token.Value] = parameter;
                     }
                     else
                     {
                         throw new ArgumentException($"unexpected parameter: {x}");
                     }   
                 }
-                return parameters;
+                return (env, parameters);
             }
             else
             {
@@ -82,17 +95,17 @@ namespace LSharp
         }
 
         // Used dynamically
-        private void DefineFunction(object name, object function)
+        public static void DefineFunction(object name, object function)
         {
             Console.WriteLine($"Defining {name} as {function}");
         }
 
-        private List<Expression> CompileForm(List<object> list)
+        private List<Expression> CompileForm(List<object> list, Dictionary<string, ParameterExpression> env)
         {
             List<Expression> arguments = new List<Expression>();
             foreach (var item in list)
             {
-                arguments.Add(Compile(item));
+                arguments.Add(Compile(item, env));
             }
             return arguments;
         }
