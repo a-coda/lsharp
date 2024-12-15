@@ -13,4 +13,8 @@
 		</AssemblyAttribute>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+	</ItemGroup>
+
 </Project>
