@@ -1,34 +1,33 @@
 ﻿using System.Linq.Expressions;
 
-namespace LSharp
+namespace LSharp;
+
+class Driver
 {
-    class Driver
+    Tokeniser tokeniser = new Tokeniser();
+    Parser parser = new Parser();
+    Printer writer = new Printer();
+    Compiler compiler = new Compiler();
+
+    public static void Main(string[] args)
     {
-        Tokeniser tokeniser = new Tokeniser();
-        Parser parser = new Parser();
-        Printer writer = new Printer();
-        Compiler compiler = new Compiler();
+        var filename = args[0];
+        new Driver().Evaluate(filename);
+    }
 
-        public static void Main(string[] args)
+    public void Evaluate(string filename)
+    {
+        using (var stream = new StreamReader(filename))
         {
-            var filename = args[0];
-            new Driver().Evaluate(filename);
-        }
-
-        public void Evaluate(string filename)
-        {
-            using (var stream = new StreamReader(filename))
+            var tokens = tokeniser.Tokenise(stream);
+            foreach (var sexpr in parser.Parse(tokens))
             {
-                var tokens = tokeniser.Tokenise(stream);
-                foreach (var sexpr in parser.Parse(tokens))
-                {
-                    writer.Print(sexpr);
-                    var expression = compiler.CompileTopLevel(sexpr);
-                    Console.Write("\n=> ");
-                    Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
-                }
+                writer.Print(sexpr);
+                var expression = compiler.CompileTopLevel(sexpr);
+                Console.Write("\n=> ");
+                Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
             }
         }
-    } 
-}
+    }
+} 
 

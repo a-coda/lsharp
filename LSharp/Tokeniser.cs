@@ -5,118 +5,117 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace LSharp
+namespace LSharp;
+
+enum TokenType
 {
-    enum TokenType
+    None, String, Number, Boolean, OpenParen, CloseParen, Symbol
+}
+class Token : ISymbolicExpression
+{ 
+    internal TokenType Type;
+    internal object Value = "";
+
+    public override bool Equals(object? obj)
     {
-        None, String, Number, Boolean, OpenParen, CloseParen, Symbol
-    }
-    class Token : ISymbolicExpression
-    { 
-        internal TokenType Type;
-        internal object Value = "";
-
-        public override bool Equals(object? obj)
-        {
-            return obj is Token t && Type.Equals(t.Type) && object.Equals(Value, t.Value);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Type.GetHashCode(), Value?.GetHashCode());
-        }
-
-        public override string ToString()
-        {
-            var value = Value?.ToString() ?? "";
-            return $"<{Type} {value}>";
-        }
+        return obj is Token t && Type.Equals(t.Type) && object.Equals(Value, t.Value);
     }
 
-    class Tokeniser
+    public override int GetHashCode()
     {
-        private StringBuilder tokenChars = new StringBuilder();
+        return HashCode.Combine(Type.GetHashCode(), Value?.GetHashCode());
+    }
 
-        internal IEnumerable<Token> Tokenise(TextReader input)
+    public override string ToString()
+    {
+        var value = Value?.ToString() ?? "";
+        return $"<{Type} {value}>";
+    }
+}
+
+class Tokeniser
+{
+    private StringBuilder tokenChars = new StringBuilder();
+
+    internal IEnumerable<Token> Tokenise(TextReader input)
+    {
+        int read;
+        while ((read = input.Read()) > -1)
         {
-            int read;
-            while ((read = input.Read()) > -1)
+            char c = (char)read;
+            switch (c)
             {
-                char c = (char)read;
-                switch (c)
-                {
-                    case '(':
-                        if (IsStarted())
+                case '(':
+                    if (IsStarted())
+                        yield return NextToken();
+                    yield return new Token { Type = TokenType.OpenParen };
+                    break;
+                case ')':
+                    if (IsStarted())
+                        yield return NextToken();
+                    yield return new Token { Type = TokenType.CloseParen };
+                    break;
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                    if (IsStarted())
+                    {
+                        if (InString())
+                            tokenChars.Append(c);
+                        else
                             yield return NextToken();
-                        yield return new Token { Type = TokenType.OpenParen };
-                        break;
-                    case ')':
-                        if (IsStarted())
-                            yield return NextToken();
-                        yield return new Token { Type = TokenType.CloseParen };
-                        break;
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '\r':
-                        if (IsStarted())
-                        {
-                            if (InString())
-                                tokenChars.Append(c);
-                            else
-                                yield return NextToken();
-                        }
-                        break;
-                    default:
-                        tokenChars.Append(c);
-                        break;
-                }
+                    }
+                    break;
+                default:
+                    tokenChars.Append(c);
+                    break;
             }
-            if (IsStarted())
-                yield return NextToken();
         }
+        if (IsStarted())
+            yield return NextToken();
+    }
 
-        internal Token NextToken()
+    internal Token NextToken()
+    {
+        if (tokenChars.Length > 0)
         {
-            if (tokenChars.Length > 0)
+            var value = tokenChars.ToString();
+            Token token;
+            if (value.StartsWith("\"") && value.EndsWith("\""))
             {
-                var value = tokenChars.ToString();
-                Token token;
-                if (value.StartsWith("\"") && value.EndsWith("\""))
-                {
-                    token = new Token { Type = TokenType.String, Value = value[1..^1] };
-                }
-                else if (Regex.IsMatch(value, @"^[0-9.]+$"))
-                {
-                    token = new Token { Type = TokenType.Number, Value = Double.Parse(value) };
-                }
-                else if (value.StartsWith("#"))
-                {
-                    token = new Token { Type = TokenType.Boolean, Value = value[1] switch { 't' => true, 'f' => false, _ => throw new ArgumentException($"unknown boolean value: {value}") } };
-                }
-                else
-                {
-                    token = new Token { Type = TokenType.Symbol, Value = value };
-                }
-                tokenChars.Clear();
-                return token;
+                token = new Token { Type = TokenType.String, Value = value[1..^1] };
             }
-            throw new ArgumentException("empty token");
+            else if (Regex.IsMatch(value, @"^[0-9.]+$"))
+            {
+                token = new Token { Type = TokenType.Number, Value = Double.Parse(value) };
+            }
+            else if (value.StartsWith("#"))
+            {
+                token = new Token { Type = TokenType.Boolean, Value = value[1] switch { 't' => true, 'f' => false, _ => throw new ArgumentException($"unknown boolean value: {value}") } };
+            }
+            else
+            {
+                token = new Token { Type = TokenType.Symbol, Value = value };
+            }
+            tokenChars.Clear();
+            return token;
         }
+        throw new ArgumentException("empty token");
+    }
 
-        internal void Append(char c)
-        {
-            tokenChars.Append(c);
-        }
+    internal void Append(char c)
+    {
+        tokenChars.Append(c);
+    }
 
-        internal bool IsStarted()
-        {
-            return tokenChars.Length > 0;
-        }
+    internal bool IsStarted()
+    {
+        return tokenChars.Length > 0;
+    }
 
-        internal bool InString()
-        {
-            return tokenChars[0] == '"' && (tokenChars.Length == 1 || !(tokenChars[^1] == '"'));
-        }
+    internal bool InString()
+    {
+        return tokenChars[0] == '"' && (tokenChars.Length == 1 || !(tokenChars[^1] == '"'));
     }
 }
