@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,38 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace LSharp;
-
-internal interface ISymbolicExpression
-{
-
-}
-    
-internal class ListExpression: ISymbolicExpression, IEnumerable<ISymbolicExpression>
-{
-    private List<ISymbolicExpression> elements = new List<ISymbolicExpression>();
-
-    public ListExpression() { }
-
-    public void Add(ISymbolicExpression expr)
-    {
-        elements.Add(expr);
-    }
-
-    public ISymbolicExpression this[int index]  
-    {
-        get { return elements[index]; }
-    }
-
-    public IEnumerator<ISymbolicExpression> GetEnumerator()
-    { 
-        return elements.GetEnumerator(); 
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return elements.GetEnumerator();
-    }
-}
 
 internal class Parser
 {
