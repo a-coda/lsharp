@@ -17,29 +17,29 @@ internal class PrinterTests
     [Test]
     public void TestPrinter()
     {
-        var input = new List<List<object>>
+        var input = new List<ListExpression>
         {
-            new List<object>
+            new ListExpression
             {
                 new Token { Type = TokenType.Symbol, Value = "defun" },
                 new Token { Type = TokenType.Symbol, Value = "foo" },
-                new List<object>
+                new ListExpression
                 {
                     new Token { Type = TokenType.Symbol, Value = "x" },
                 },
-                new List<object>
+                new ListExpression
                 {
                     new Token { Type = TokenType.Symbol, Value = "+" },
                     new Token { Type = TokenType.Symbol, Value = "x" },
                     new Token { Type = TokenType.Number, Value = 1.0 },
                 }
             },
-            new List<object>()
+            new ListExpression()
             {
                 new Token { Type = TokenType.Symbol, Value = "foo" },
                 new Token { Type = TokenType.Number, Value = 10.05 },
             },
-            new List<object>()
+            new ListExpression()
             {
                 new Token { Type = TokenType.Symbol, Value = "concat" },
                 new Token { Type = TokenType.String, Value = "a" },

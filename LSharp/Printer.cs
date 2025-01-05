@@ -8,14 +8,14 @@ namespace LSharp;
 
 internal class Printer
 {
-    internal void Print(object obj)
+    internal void Print(ISymbolicExpression obj)
     {
         Print(Console.Out, obj);
     }
 
-    internal void Print(TextWriter stream, object obj)
+    internal void Print(TextWriter stream, ISymbolicExpression obj)
     {
-        if (obj is List<object> list)
+        if (obj is ListExpression list)
         {
             stream.Write("(");
             bool addSpace = false;
