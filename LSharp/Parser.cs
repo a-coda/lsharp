@@ -9,7 +9,7 @@ namespace LSharp;
 
 internal class Parser
 {
-    internal IEnumerable<ListExpression> Parse(IEnumerable<Token> tokenisedInput)
+    internal ListExpression? Parse(IEnumerable<Token> tokenisedInput)
     {
         Stack<ListExpression> stack = new Stack<ListExpression>();
         foreach (var token in tokenisedInput)
@@ -27,7 +27,7 @@ internal class Parser
                     }
                     else
                     {
-                        yield return sublist;
+                        return sublist;
                     }
                     break;
                 default:
@@ -35,5 +35,6 @@ internal class Parser
                     break;
             }
         }
+        return null;
     }
 }

@@ -20,13 +20,29 @@ class Driver
         using (var stream = new StreamReader(filename))
         {
             var tokens = tokeniser.Tokenise(stream);
-            foreach (var sexpr in parser.Parse(tokens))
+            while (true)
             {
+                var sexpr = parser.Parse(tokens);
+                if (sexpr == null)
+                {
+                    break;
+                }
                 writer.Print(sexpr);
                 var expression = compiler.CompileTopLevel(sexpr);
                 Console.Write("\n=> ");
                 Console.WriteLine(((LambdaExpression)expression).Compile().DynamicInvoke());
             }
+        }
+    }
+
+    public object Eval(string form)
+    {
+        using (var stream = new StringReader(form))
+        {
+            var tokens = tokeniser.Tokenise(stream);
+            var expr = parser.Parse(tokens);
+            var compiled = compiler.CompileTopLevel(expr);
+            return ((LambdaExpression)compiled).Compile().DynamicInvoke();
         }
     }
 } 
