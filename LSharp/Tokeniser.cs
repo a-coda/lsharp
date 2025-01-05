@@ -11,7 +11,7 @@ namespace LSharp
     {
         None, String, Number, Boolean, OpenParen, CloseParen, Symbol
     }
-    class Token
+    class Token : ISymbolicExpression
     { 
         internal TokenType Type;
         internal object Value = "";

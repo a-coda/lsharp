@@ -15,17 +15,17 @@ namespace LSharp
         {
         }
 
-        internal Expression CompileTopLevel(object expr)
+        internal Expression CompileTopLevel(ISymbolicExpression expr)
         {
             return Expression.Lambda(Compile(expr, new Dictionary<string, ParameterExpression>()));
         }
 
 
-        internal Expression Compile(object sexpr, Dictionary<string, ParameterExpression> env)
+        internal Expression Compile(ISymbolicExpression sexpr, Dictionary<string, ParameterExpression> env)
         {
             return sexpr switch
             {
-                List<object> list => list[0] switch
+                ListExpression list => list[0] switch
                 {
                     Token { Type: TokenType.Symbol, Value: "if" } => CompileIf(CompileForm(list ,env)),
                     Token { Type: TokenType.Symbol, Value: "defun" } => CompileDefun(list),
@@ -57,7 +57,7 @@ namespace LSharp
             };
         }
 
-        private Expression CompileDefun(List<object> list)
+        private Expression CompileDefun(ListExpression list)
         {
             (Dictionary<string, ParameterExpression> env, IEnumerable<ParameterExpression> parameters) = CompileFunctionParameters(list[2]);
             return CompileFunctionCall(
@@ -69,7 +69,7 @@ namespace LSharp
 
         private (Dictionary<string, ParameterExpression>, IEnumerable<ParameterExpression>) CompileFunctionParameters(object sexpr)
         {
-            if (sexpr is List<object> list)
+            if (sexpr is ListExpression list)
             {
                 var parameters = new List<ParameterExpression>();
                 var env = new Dictionary<string, ParameterExpression>();
@@ -100,7 +100,7 @@ namespace LSharp
             Console.WriteLine($"Defining {name} as {function}");
         }
 
-        private List<Expression> CompileForm(List<object> list, Dictionary<string, ParameterExpression> env)
+        private List<Expression> CompileForm(ListExpression list, Dictionary<string, ParameterExpression> env)
         {
             List<Expression> arguments = new List<Expression>();
             foreach (var item in list)
